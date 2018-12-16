@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js" data-dojo-config="async: true"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+  </head>
+<body>
+  
+  
+<div class="image" ng-app="myApp" ng-controller="myCtrl">
+<img  width=400px height=400px ng-mousemove="myFunc($event)" ng-click="imageClicked($event)" SRC="https://i.ibb.co/CVpHBhG/08320661-4fe3-4568-999e-543eda218d23.jpg"; name="VCRImage" BORDER=0>
+
+  <form>
+    <textarea rows="4" cols="50" name="subject" class="message" required>{{results}}</textarea>
+    <input onclick="download('photos.csv', results);" name="submit" class="btn" type="submit" value="Save" />
+</form>
+  
+</div>
+  
+
+
+  
+</body>
+</html>
