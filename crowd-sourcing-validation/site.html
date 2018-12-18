@@ -11,12 +11,11 @@
   
 <div class="image" ng-app="myApp" ng-controller="myCtrl">
 <img  width=400px height=400px ng-mousemove="myFunc($event)" ng-click="imageClicked($event)" SRC="https://i.ibb.co/CVpHBhG/08320661-4fe3-4568-999e-543eda218d23.jpg"; name="VCRImage" BORDER=0>
-
-  <form>
-    <textarea rows="4" cols="50" name="subject" class="message" required>{{results}}</textarea>
+<form>
+    <!--<textarea rows="4" cols="50" name="subject" class="message" required>{{results}}</textarea>-->
     <input onclick="download('photos.csv', results);" name="submit" class="btn" type="submit" value="Save" />
+
 </form>
-  
 </div>
   
 

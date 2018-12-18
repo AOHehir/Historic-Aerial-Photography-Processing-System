@@ -2,6 +2,7 @@ img[name=VCRImage]:hover
 {
   cursor:pointer;
 }
+
 div.image {
   max-width:400px;
   max-height:400px;

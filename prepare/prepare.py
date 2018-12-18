@@ -4,7 +4,10 @@ import uuid
 from shutil import copyfile
 from collections import OrderedDict
 
-
+if os.name == 'nt':
+    system = 'Windows'
+else:
+    system = 'Unix'
 
 
 def return_content_from_file(photolist):
@@ -43,7 +46,13 @@ def by_selecting_a_sample_photo_from_each_run(photo_list):
             guid = str(uuid.uuid4())
             print(path)
             print(guid)
-            csv_list.append(os.path.join(path, os.listdir('/' + path)[0]) + ', ' + path.split('/')[-2] + ', ' + path.split('/')[-1] + ', ' + guid + '\n')
+            if (system == 'Windows'):
+                path = path.replace('\\','\\').replace(':',':\\')
+                pdf_found = os.listdir(path)[0]
+                csv_list.append(os.path.join(path, pdf_found) + ', ' + path.split('\\')[-2] + ', ' + path.split('\\')[-1] + ', ' + guid + '\n')
+            else:
+                pdf_found = os.listdir('/' + path)[0]
+                csv_list.append(os.path.join(path, pdf_found) + ', ' + path.split('/')[-2] + ', ' + path.split('/')[-1] + ', ' + guid + '\n')
         cwd = os.getcwd()
         try:
             file = open(os.path.join(cwd,'photo-sample.csv'), 'r+')
@@ -55,9 +64,14 @@ def by_selecting_a_sample_photo_from_each_run(photo_list):
 def by_moving_and_renaming_photos_for_crowd_sourcing_site(photo_samples, target_location):
     photos = return_content_from_file(photo_samples)
     for photo in photos:
-        source = '/'+photo.split(",")[0]
-        guid = photo.split(",")[3].strip(' ')
-        target = os.path.join(target_location, guid, '.pdf').replace('/.pdf','.pdf')
+        if (system == 'Windows'):
+            source = photo.split(",")[0]
+            guid = photo.split(",")[3].strip(' ')
+            target = os.path.join(target_location, guid, '.pdf').replace('\\.pdf','.pdf')
+        else:
+            source = '/' + photo.split(",")[0]
+            guid = photo.split(",")[3].strip(' ')
+            target = os.path.join(target_location, guid, '.pdf').replace('/.pdf','.pdf')
         # move file
         print source
         print target
@@ -96,21 +110,59 @@ def by_recreating_the_html_site(template_js, validated_photos, photo_samples, ba
         counter = counter + 1
 
     js = js.replace('FIND', script)
+    cwd = os.getcwd()
+    try:
+        file = open(os.path.join(cwd,'code.js'), 'w+')
+    except IOError:
+        file = open(os.path.join(cwd,'code.js'), 'w+')
+    file.writelines(js)
+    file.close()
 
-    print js
+def by_recreating_photo_csv_minus_validated_photos(validated_photos, validated_photos_location):
+    f_obj = open(validated_photos, 'r')
+    validated_photos_list = f_obj.readlines()
+    f_obj.close()
+    validated_photo_files = os.listdir(validated_photos_location)
+    cwd = os.getcwd()
+    filepath = os.path.join(cwd, r'prepare', r'validated-photos')
+    for csv_file in validated_photo_files:
+        data = open(os.path.join(filepath, csv_file), 'r').readlines()
+        for line in data:
+            validated_photos_list.append(line)
+    
+    try:
+        file = open(validated_photos, 'w+')
+    except IOError:
+        file = open(validated_photos, 'w+')
+    file.writelines(validated_photos_list)
+    file.close()
 
 
-photo_list = '/home/laptop/Desktop/prepare/photo-list-unix.txt'
-output_location = '/home/laptop/Desktop/prepare/samples'
-photo_samples = '/home/laptop/Desktop/prepare/photo-sample.csv'
-target_location = '/home/laptop/Desktop/prepare/samples'
-template_js = '/home/laptop/Desktop/prepare/code-template.js'
-validated_photos = '/home/laptop/Desktop/prepare/photos.csv'
-base_url = 'http://dev.actmapi.act.gov.au/aerial/run-sample/'
+
+# Unix
+#photo_list = '/home/laptop/Desktop/prepare/photo-list-unix.txt'
+#photo_samples = '/home/laptop/Desktop/prepare/photo-sample.csv'
+#output_location = '/home/laptop/Desktop/prepare/samples'
+#target_location = '/home/laptop/Desktop/prepare/samples'
+#template_js = '/home/laptop/Desktop/prepare/code-template.js'
+#validated_photos = '/home/laptop/Desktop/prepare/photos.csv'
+
+# Windows
+photo_list = 'E:\sandbox\Historic-Aerial-Photography-Processing-System\prepare\photo-list-win.txt'
+photo_samples = 'E:\sandbox\Historic-Aerial-Photography-Processing-System\prepare\photo-sample.csv'
+output_location = 'E:\sandbox\Historic-Aerial-Photography-Processing-System\prepare\samples'
+target_location = 'E:\sandbox\Historic-Aerial-Photography-Processing-System\prepare\samples'
+template_js = 'E:\sandbox\Historic-Aerial-Photography-Processing-System\prepare\code-template.js'
+validated_photos = 'E:\sandbox\Historic-Aerial-Photography-Processing-System\prepare\photos.csv'
+validated_photos_location = r'E:\sandbox\Historic-Aerial-Photography-Processing-System\prepare\validated-photos'
+
+base_url = 'http://dev.actmapi.act.gov.au/images/run-sample/'
 
 #by_selecting_a_sample_photo_from_each_run(photo_list)
 
 #by_moving_and_renaming_photos_for_crowd_sourcing_site(photo_samples, target_location)
+
+by_recreating_photo_csv_minus_validated_photos( validated_photos, validated_photos_location)
 
 by_recreating_the_html_site(template_js, validated_photos, photo_samples, base_url)
 
