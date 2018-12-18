@@ -118,7 +118,7 @@ def by_recreating_the_html_site(template_js, validated_photos, photo_samples, ba
     file.writelines(js)
     file.close()
 
-def by_recreating_photo_csv_minus_validated_photos(validated_photos, validated_photos_location):
+def by_recreating_photo_csv(validated_photos, validated_photos_location):
     f_obj = open(validated_photos, 'r')
     validated_photos_list = f_obj.readlines()
     f_obj.close()
@@ -129,15 +129,65 @@ def by_recreating_photo_csv_minus_validated_photos(validated_photos, validated_p
         data = open(os.path.join(filepath, csv_file), 'r').readlines()
         for line in data:
             validated_photos_list.append(line)
-    
+    clean_photo_list = []
+    photo_list = return_content_from_file(validated_photos)
+    # extract guids of vlaidated photos
+    for photo in photo_list:
+        clean_photo_list.append(photo.split(',')[0].replace('.jpg','').split('/')[-1:][0])
+    # remove duplicates and order list
+    clean_photo_list = list(OrderedDict.fromkeys(clean_photo_list))
+    unique_guids = []
+    for validated_guid in clean_photo_list:
+        for url in validated_photos_list:
+            if ((validated_guid in url) and (url not in unique_guids)):
+                unique_guids.append(url)
     try:
         file = open(validated_photos, 'w+')
     except IOError:
         file = open(validated_photos, 'w+')
-    file.writelines(validated_photos_list)
+    file.writelines(unique_guids)
     file.close()
 
+def by_joining_run_to_flight_orientation_info(validated_photos, photo_samples):
+    orientation = return_content_from_file(validated_photos)
+    runs = return_content_from_file(photo_samples)
+    orientation_data = []
+    run_data = []
+    joined_data = []
 
+    for run in orientation:
+        guid = run.replace(' ', '').split(',')[0].replace('.jpg', '').split('/')[-1:][0]
+        orientation = run.replace(' ', '').split(',')[1]
+        orientation_data.append([guid, orientation])
+    
+    for run in runs:
+        year = run.replace(' ', '').split(',')[1]
+        run_no = run.replace(' ', '').split(',')[2]
+        guid = run.replace(' ', '').split(',')[3]
+        run_data.append([guid, year, run_no])
+
+    for o_data in orientation_data:
+        for r_data in run_data:
+            if (o_data[0] == r_data[0]):
+                orient_plus_run_data = o_data + r_data
+                # Remove duplicate guids
+                orient_plus_run_data = list(OrderedDict.fromkeys(orient_plus_run_data))
+                if (orient_plus_run_data not in joined_data):
+                    joined_data.append(orient_plus_run_data)
+    csv = ''
+    for run in joined_data:
+        orientation = run[1]
+        year = run[2]
+        flight_run = run[3]
+        csv += '' + year + ', ' + flight_run + ', ' + orientation + '\n'
+    
+    cwd = os.getcwd()
+    try:
+        file = open(os.path.join(cwd,'run-orientation.csv'), 'w+')
+    except IOError:
+        file = open(os.path.join(cwd,'run-orientation.csv'), 'w+')
+    file.writelines(csv)
+    file.close()
 
 # Unix
 #photo_list = '/home/laptop/Desktop/prepare/photo-list-unix.txt'
@@ -162,7 +212,11 @@ base_url = 'http://dev.actmapi.act.gov.au/images/run-sample/'
 
 #by_moving_and_renaming_photos_for_crowd_sourcing_site(photo_samples, target_location)
 
-by_recreating_photo_csv_minus_validated_photos( validated_photos, validated_photos_location)
+#by_recreating_photo_csv(validated_photos, validated_photos_location)
 
-by_recreating_the_html_site(template_js, validated_photos, photo_samples, base_url)
+#by_recreating_the_html_site(template_js, validated_photos, photo_samples, base_url)
+
+by_joining_run_to_flight_orientation_info(validated_photos, photo_samples)
+
+
 
